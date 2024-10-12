@@ -7,13 +7,12 @@
 import "./style.css";
 
 import { definePluginSettings } from "@api/Settings";
-import { EquicordDevs } from "@utils/constants";
 import { getCurrentChannel } from "@utils/discord";
 import definePlugin, { OptionType } from "@utils/types";
 import { waitFor } from "@webpack";
 import { UserStore } from "@webpack/common";
 
-let ChannelTextAreaClasses;
+let ChannelTextAreaClasses: { channelTextArea: string; } | null = null;
 let shouldShowColorEffects: boolean;
 let position: boolean;
 let forceLeft = false;
@@ -51,7 +50,9 @@ const settings = definePluginSettings({
 export default definePlugin({
     name: "CharacterCounter",
     description: "Adds a character counter to the chat input",
-    authors: [EquicordDevs.creations],
+    authors: [
+        { name: "Creation's", id: 209830981060788225n }
+    ],
     settings: settings,
 
     start() {
@@ -137,7 +138,7 @@ export default definePlugin({
     },
 
     stop() {
-        const charCounterDiv = document.querySelector(".char-counter");
+        const charCounterDiv: Element | null = document.querySelector(".char-counter");
         if (charCounterDiv) charCounterDiv.remove();
     }
 });
