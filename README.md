@@ -1,6 +1,6 @@
 # CharacterCounter Plugin
 
-CharacterCounter is a Equicord plugin that adds a character counter to the chat input in Discord. It dynamically displays how many characters you have typed, with customizable visual effects for when you approach the character limit.
+CharacterCounter is a Vencord plugin that adds a character counter to the chat input in Discord. It dynamically displays how many characters you have typed, with customizable visual effects for when you approach the character limit.
 
 ### Features
 - **Character Limit:** Automatically adjusts the character limit based on your Nitro status.
