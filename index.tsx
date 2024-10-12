@@ -1,29 +1,31 @@
 /*
  * Vencord, a Discord client mod
  * Copyright (c) 2024 Vendicated and contributors
- * SPDX: GPL-3.0-or-later
+ * SPDX-License-Identifier: GPL-3.0-or-later
  */
 
-import "./index.css";
+import "./style.css";
 
-import { waitFor } from "@webpack";
-import definePlugin, { OptionType } from "@utils/types";
-import { EquicordDevs } from "@utils/constants";
-import { UserStore } from "@webpack/common";
 import { definePluginSettings } from "@api/Settings";
+import { EquicordDevs } from "@utils/constants";
+import { getCurrentChannel } from "@utils/discord";
+import definePlugin, { OptionType } from "@utils/types";
+import { waitFor } from "@webpack";
+import { UserStore } from "@webpack/common";
 
 let ChannelTextAreaClasses;
 let shouldShowColorEffects: boolean;
 let position: boolean;
+let forceLeft = false;
 
-waitFor(["buttonContainer", "channelTextArea"], (m) => (ChannelTextAreaClasses = m));
+waitFor(["buttonContainer", "channelTextArea"], m => (ChannelTextAreaClasses = m));
 
 const settings = definePluginSettings({
     colorEffects: {
         type: OptionType.BOOLEAN,
         description: "Turn on or off color effects for getting close to the character limit",
         default: true,
-        onChange: (value) => {
+        onChange: value => {
             shouldShowColorEffects = value;
         }
     },
@@ -31,7 +33,7 @@ const settings = definePluginSettings({
         type: OptionType.BOOLEAN,
         description: "Move the character counter to the left side of the chat input",
         default: false,
-        onChange: (value) => {
+        onChange: value => {
             position = value;
 
             const charCounterDiv = document.querySelector(".char-counter");
@@ -53,8 +55,8 @@ export default definePlugin({
     settings: settings,
 
     start() {
-        const currentUser = UserStore.getCurrentUser();
-        const charMax = currentUser?.premiumType === undefined || currentUser?.premiumType === 0 || currentUser?.premiumType === 3 ? 2000 : 4000;
+        const premiumType = (UserStore.getCurrentUser().premiumType ?? 0);
+        const charMax = premiumType === 2 ? 4000 : 2000;
 
         shouldShowColorEffects = settings.store.colorEffects;
         position = settings.store.position;
@@ -68,7 +70,7 @@ export default definePlugin({
                 charCounterDiv = document.createElement("div");
                 charCounterDiv.classList.add("char-counter");
 
-                if (position) charCounterDiv.classList.add("left");
+                if (position || forceLeft) charCounterDiv.classList.add("left");
 
                 charCounterDiv.innerHTML = `<span class="char-count">0</span>/<span class="char-max">${charMax}</span>`;
             }
@@ -120,7 +122,10 @@ export default definePlugin({
         const observeDOMChanges = () => {
             const observer = new MutationObserver(() => {
                 const chatTextArea = document.querySelector(`.${ChannelTextAreaClasses?.channelTextArea}`);
-                if (chatTextArea) {
+                if (chatTextArea && !document.querySelector(".char-counter")) {
+                    const currentChannel = getCurrentChannel();
+                    forceLeft = currentChannel?.rateLimitPerUser !== 0;
+
                     addCharCounter();
                 }
             });
